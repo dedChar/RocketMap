@@ -10,6 +10,12 @@ $(function () {
     const scaleByRarity = true // Enable scaling by rarity. Default: true.
     const upscalePokemon = false // Enable upscaling of certain Pokemon (upscaledPokemon and notify list). Default: false.
     const upscaledPokemon = [] // Add Pomon IDs separated by commas (e.g. [1, 2, 3]) to upscale icons. Default: [].
+    const minZoomLevel = 13 // Minimum Zoom level (0-20) the map can have (Restricts how far the user can zoom out). Default: null.
+    const maxZoomLevel = null // Maximum Zoom level (0-20) (how close the user can zoom in). Default: null.
+    const mapBounds = [ // Boundaries of the viewable map
+        [49.957193, 10.985878], // Top-Left corner
+        [49.852362, 10.837129]  // Bottom-Right corner
+    ]
 
     // Google Analytics property ID. Leave empty to disable.
     // Looks like 'UA-XXXXX-Y'.
@@ -64,7 +70,6 @@ $(function () {
 
 
     /* Do stuff. */
-
     const currentPage = window.location.pathname
     // Marker cluster might have loaded before custom.js.
     const isMarkerClusterLoaded = typeof window.markerCluster !== 'undefined' && !!window.markerCluster
@@ -98,6 +103,44 @@ $(function () {
             window.markerCluster.setMaxZoom(-1)
         }
     }
+
+    // Map zoom setup.
+    const bounds = new google.maps.LatLngBounds(
+        new google.maps.LatLng(mapBounds[1][0], mapBounds[1][1]), 
+        new google.maps.LatLng(mapBounds[0][0], mapBounds[0][1])
+    )
+
+    map.addListener('center_changed', function() {
+        // don't do anything if still inside bounds
+        if (bounds.contains(map.getCenter())) {
+            return
+        }
+
+
+        // create an error message to inform the user
+        toastr.error("You can't view unscanned areas!", "Out of bounds!", {'preventDuplicates': true})
+
+        var center = map.getCenter(),
+            x = center.lat(),
+            y = center.lng(),
+            maxX = bounds.getNorthEast().lat(),
+            maxY = bounds.getNorthEast().lng(),
+            minX = bounds.getSouthWest().lat(),
+            minY = bounds.getSouthWest().lng()
+
+        // set new center coords to boundary edge coords
+        if (x < minX) {x = minX}
+        if (x > maxX) {x = maxX}
+        if (y < minY) {y = minY}
+        if (y > maxY) {y = maxY}
+
+        map.panTo(new google.maps.LatLng(x, y))
+    })
+
+    map.setOptions({
+        'minZoom': minZoomLevel,
+        'maxZoom': maxZoomLevel
+    })
 
     // Google Analytics.
     if (analyticsKey.length > 0) {
