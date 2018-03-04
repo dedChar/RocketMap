@@ -149,7 +149,7 @@ $(function () {
     const switches = document.getElementsByClassName('form-control switch-container')
     const switchesToRemove = []
 
-    siwtches.forEach((s) => {        
+    Array.prototype.forEach.call(switches, (s) => {        
         var name = s.getElementsByTagName('h3')
         if (name.length == 1 && (name[0].innerHTML == "Spawn Points" || name[0].innerHTML == "Scanned Locations")) {
             switchesToRemove.push(s)
@@ -162,5 +162,15 @@ $(function () {
 
     Store.set('showSpawnpoints', false)
     Store.set('showScanned', false)
+
+    // Hide status link
+    const labels = document.getElementsByClassName("label")
+
+    Array.prototype.forEach.call(labels, (label) => {
+        if (label.innerHTML == 'Status') {
+            label.parentElement.style.display = 'none'
+        }
+    })
+
 
 })
