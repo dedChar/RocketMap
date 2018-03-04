@@ -145,4 +145,22 @@ $(function () {
 
     Store.set('remember_select_exclude', totalExcluded) // Tell the script to store the value to set it.
 
+    // Disable spawnpoint & scanned location setting
+    const switches = document.getElementsByClassName('form-control switch-container')
+    const switchesToRemove = []
+
+    siwtches.forEach((s) => {        
+        var name = s.getElementsByTagName('h3')
+        if (name.length == 1 && (name[0].innerHTML == "Spawn Points" || name[0].innerHTML == "Scanned Locations")) {
+            switchesToRemove.push(s)
+        }
+    }) 
+
+    switchesToRemove.forEach((s) => {
+        s.parentNode.removeChild(s)
+    })
+
+    Store.set('showSpawnpoints', false)
+    Store.set('showScanned', false)
+
 })
