@@ -15,7 +15,7 @@ CSS class definitions
 
 #header > a#paypalLink::before {
 	margin: 0 .5em 0 0;
-	content: "";
+	content: "\f1ed";
 	-moz-osx-font-smoothing: grayscale;
 	-webkit-font-smoothing: antialiased;
 	font-family: "Font Awesome 5 Brands";
@@ -26,11 +26,26 @@ CSS class definitions
 
 #header > a#patreonLink::before {
 	margin: 0 .5em 0 0;
-	content: "";
+	content: "\f3d9";
 	-moz-osx-font-smoothing: grayscale;
 	-webkit-font-smoothing: antialiased;
 	font-family: "Font Awesome 5 Brands";
 	font-style: normal;
 	font-weight: 400;
 	text-transform: none !important;
+}
+
+#header > a#pkmnCounter::before {
+	margin: 0 .5em 0 0;
+	content: "\f3c5";
+	-moz-osx-font-smoothing: grayscale;
+	-webkit-font-smoothing: antialiased;
+	font-family: "Font Awesome 5 Free";
+	font-style: normal;
+	font-weight: 900;
+	text-transform: none !important;
+}
+
+#header > a[href="#stats"]::before {
+	font-family: "Font Awesome 5 Free"
 }
