@@ -205,16 +205,72 @@ $(function () {
         return $(this).html() == "Full Stats" 
     }).remove()
 
-    // Add a Pokémon Counter to the header
-    $("header#header").append(
-        $("<a id='counter' style='float:right'>Pokémon on screen: <span>0</span></a>").click(function() {
-            $(this).find("span").html(Object.keys(mapData.pokemons).length)
+    // Add new items to header
+    const $statsToggle = $("header#header a#statsToggle") // "Stats" button in header
+    const toInsert = [ // Array of new items that should be inserted
+        /*
+            The items that will be inserted can be added as:
+                - a jQuery object
+                - a HTML string
+            These are then inserted to the left side of the "Stats" button by default.
+            If they should be inserted to the right side, put your HTML string/jQuery object into an array like this:
+                [
+                    "<p>Example</p>",
+                    "right"
+                ]
+            
+            The items will appear in the order they are in the array. (e.g. first item in array will be first item to the left of status toggle)
+        */
+        $("<a id='pkmnCounter' style='float:right'>Pokémon on screen: <span>0</span></a>").click(
+            function() { 
+                $(this).find("span").html(Object.keys(mapData.pokemons).length)
+            }),
+        "<a target='_blank' href='https://www.paypal.com' id='paypalLink' style='float:right'>Paypal</a>",
+        "<a target='_blank' href='https://www.patreon.com' id='patreonLink' style='float:right'>Patreon</a>",
+        //["<a style='float:right'>test</a>", "right"]
+    ]
+
+    toInsert.reverse().forEach((entry) => {
+        var obj, mode
+        if (typeof entry == "string") { // Convert strings to jQuery objects
+            obj = $(entry)
         }
-    ))
-    
-    // Update counter every 2 seconds
+        else if (typeof entry == "object") {
+            if (entry instanceof jQuery) { 
+                obj = entry    
+            } else {
+                obj = entry[0]
+                if (typeof obj == "string") {
+                    obj = $(obj)
+                }
+                else if (!(obj instanceof jQuery)) {
+                    obj = undefined
+                }
+                mode = entry[1]
+            }    
+        }
+
+        if (obj == undefined) { // Do nothing if the entry is bad
+            return
+        }
+
+        if (mode == undefined) { // Default is left
+            mode = "left"
+        }
+
+        if (mode == "left") {
+            obj.insertAfter($statsToggle)
+        } 
+        else if (mode == "right") {
+            obj.insertBefore($statsToggle)
+        }
+    })
+
+
+    // Update Pokémin Counter every 2 seconds
     window.setInterval(
         function() { 
-            $("header#header a#counter span").html(Object.keys(mapData.pokemons).length)
+            $("header#header a#pkmnCounter span").html(Object.keys(mapData.pokemons).length)
         }, 2000)
+
 })
