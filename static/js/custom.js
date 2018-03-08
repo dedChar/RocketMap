@@ -30,7 +30,7 @@ $(function () {
     // shown on every visit. Requires support for localStorage.
     // Updating only the MOTD title (and not the text) will not make the MOTD
     // appear again.
-    const motdShowOnlyOnce = true
+    const motdShowOnlyOnce = false
 
     // What pages should the MOTD be shown on? By default, homepage and mobile
     // pages.
@@ -189,31 +189,19 @@ $(function () {
     Store.set('remember_select_exclude', totalExcluded) // Tell the script to store the value to set it.
 
     // Disable spawnpoint & scanned location setting
-    const switches = document.getElementsByClassName('form-control switch-container')
-    const switchesToRemove = []
-
-    Array.prototype.forEach.call(switches, (s) => {        
-        var name = s.getElementsByTagName('h3')
-        if (name.length == 1 && (name[0].innerHTML == "Spawn Points" || name[0].innerHTML == "Scanned Locations")) {
-            switchesToRemove.push(s)
-        }
-    }) 
-
-    switchesToRemove.forEach((s) => {
-        s.parentNode.removeChild(s)
-    })
+    $("#spawnpoints-switch").parents("div.form-control.switch-container").remove()
+    $("#scanned-switch").parents("div.form-control.switch-container").remove()
 
     Store.set('showSpawnpoints', false)
     Store.set('showScanned', false)
 
-    // Hide status link
-    const labels = document.getElementsByClassName("label")
+    // Remove status link
+    $("span.label").filter(function(i) {
+        return $(this).html() == "Status"
+    }).parent().remove()
 
-    Array.prototype.forEach.call(labels, (label) => {
-        if (label.innerHTML == 'Status') {
-            label.parentElement.style.display = 'none'
-        }
-    })
-
-
+    // Remove Full Stats link
+    $("nav#stats a").filter(function(i) { 
+        return $(this).html() == "Full Stats" 
+    }).remove()
 })
