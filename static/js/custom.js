@@ -206,7 +206,11 @@ $(function () {
     }).remove()
 
     // Add new items to header
-    const $statsToggle = $("header#header a#statsToggle") // "Stats" button in header
+    const $statsToggle = $("#header a#statsToggle") // "Stats" button in header
+    const $headerTitleIcon = $("#header h1") // RocketMap + Icon in header
+    $statsToggle.addClass("headerItem")
+    $headerTitleIcon.addClass("headerItem")
+
     const toInsert = [ // Array of new items that should be inserted
         /*
             The items that will be inserted can be added as:
@@ -221,12 +225,12 @@ $(function () {
             
             The items will appear in the order they are in the array. (e.g. first item in array will be first item to the left of status toggle)
         */
-        $("<a id='pkmnCounter' style='float:right'>Pokémon on screen: <span>0</span></a>").click(
+        $("<a id='pkmnCounter' style='float:right'><span class='label'>Pokémon</span>: <span>0</span></a>").click(
             function() { 
-                $(this).find("span").html(Object.keys(mapData.pokemons).length)
+                $(this).find("span[class!='label']").html(Object.keys(mapData.pokemons).length)
             }),
-        "<a target='_blank' href='https://www.paypal.com' id='paypalLink' style='float:right'>Paypal</a>",
-        "<a target='_blank' href='https://www.patreon.com' id='patreonLink' style='float:right'>Patreon</a>",
+        "<a target='_blank' href='https://www.paypal.me/PokeGoBamb/5' id='paypalLink' style='float:right;color:#ffe082'><span class='label'>Paypal</span></a>",
+        "<a target='_blank' href='https://www.patreon.com/PokeGo' id='patreonLink' style='float:right;color:#ffe082'><span class='label'>Patreon</span></a>",
         //["<a style='float:right'>test</a>", "right"]
     ]
 
@@ -257,6 +261,7 @@ $(function () {
         if (mode == undefined) { // Default is left
             mode = "left"
         }
+        obj.addClass("headerItem") // Add to "headerItem" class for dynamic hiding on page resize
 
         if (mode == "left") {
             obj.insertAfter($statsToggle)
@@ -267,10 +272,30 @@ $(function () {
     })
 
 
-    // Update Pokémin Counter every 2 seconds
+    // Update Pokémon Counter every 2 seconds
     window.setInterval(
         function() { 
-            $("header#header a#pkmnCounter span").html(Object.keys(mapData.pokemons).length)
+            $("pkmnCounter").click()
         }, 2000)
 
+    const extraItemsWidth = 28
+
+    // Hide items if not enough space each time the site is resized
+    $(window).resize(() => {
+        var headerSize = $("#header").outerWidth(true), itemsSize = 0
+
+        $("#header .headerItem").each((i, e) => {
+            var item = $(this).find(e)
+            var newItemsSize = itemsSize + item.outerWidth(true) + extraItemsWidth
+            
+            if (newItemsSize >= headerSize) { // If items won't fit
+                item.hide()
+            } else {
+                if (item.is(":hidden")) { // Reenable icon if previously hidden
+                    item.show()
+                } 
+                itemsSize = newItemsSize
+            }
+        })
+    })
 })
