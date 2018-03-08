@@ -204,4 +204,17 @@ $(function () {
     $("nav#stats a").filter(function(i) { 
         return $(this).html() == "Full Stats" 
     }).remove()
+
+    // Add a Pokémon Counter to the header
+    $("header#header").append(
+        $("<a id='counter' style='float:right'>Pokémon on screen: <span>0</span></a>").click(function() {
+            $(this).find("span").html(Object.keys(mapData.pokemons).length)
+        }
+    ))
+    
+    // Update counter every 2 seconds
+    window.setInterval(
+        function() { 
+            $("header#header a#counter span").html(Object.keys(mapData.pokemons).length)
+        }, 2000)
 })
