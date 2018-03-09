@@ -232,8 +232,17 @@ $(function () {
             function() { 
                 $(this).find("span[class!='label']").html(Object.keys(mapData.pokemons).length)
             }),
-        "<a target='_blank' href='https://www.paypal.me/PokeGoBamb/5' id='paypalLink' style='float:right;color:#ffe082'><i class='fab fa-paypal fa-fw itemIcon'></i><i><!--Buffer to avoid icon collision--></i><span class='label'>Paypal</span></a>",
-        "<a target='_blank' href='https://www.patreon.com/PokeGo' id='patreonLink' style='float:right;color:#ffe082'><i class='fab fa-patreon fa-fw itemIcon'></i><i><!--Buffer to avoid icon collision--></i><span class='label'>Patreon</span></a>",
+        $("<a target='_blank' href='https://www.paypal.me/PokeGoBamb/5' id='paypalLink' style='float:right;color:#ffe082'><i class='fab fa-paypal fa-fw itemIcon'></i><i><!--Buffer to avoid icon collision--></i><span class='label' style='display:none;'>Paypal</span></a>").hover(
+            (e) => {
+                //console.log("toggle paypal")
+                $(this).find("#paypalLink span.label").toggle("blind", {direction: "left"})
+            }),
+        $("<a target='_blank' href='https://www.patreon.com/PokeGo' id='patreonLink' style='float:right;color:#ffe082'><i class='fab fa-patreon fa-fw itemIcon'></i><i><!--Buffer to avoid icon collision--></i><span class='label' style='display:none;'>Patreon</span></a>").hover(
+            (e) => {
+                //console.log("toggle paypal")
+               $(this).find("#patreonLink span.label").toggle("blind", {direction: "left"}) 
+            }),
+        "<a id='supportString' style='float:right'><span class='label'>Support us on:</span></a>"
         //["<a style='float:right'>test</a>", "right"]
     ]
 
