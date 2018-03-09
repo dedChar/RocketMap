@@ -188,6 +188,9 @@ $(function () {
 
     Store.set('remember_select_exclude', totalExcluded) // Tell the script to store the value to set it.
 
+    // Add Font Awesome 5 JS-Version
+    $("head").prepend("<script defer src='https://use.fontawesome.com/releases/v5.0.8/js/all.js'></script>")
+
     // Disable spawnpoint & scanned location setting
     $("#spawnpoints-switch").parents("div.form-control.switch-container").remove()
     $("#scanned-switch").parents("div.form-control.switch-container").remove()
@@ -225,12 +228,12 @@ $(function () {
             
             The items will appear in the order they are in the array. (e.g. first item in array will be first item to the left of status toggle)
         */
-        $("<a id='pkmnCounter' style='float:right'><span class='label'>Pokémon</span>: <span>0</span></a>").click(
+        $("<a id='pkmnCounter' style='float:right'><i class='fas fa-map-marker-alt fa-fw itemIcon'></i><i><!--Buffer to avoid icon collision--></i><span class='label'>Pokémon</span>: <span>0</span></a>").click(
             function() { 
                 $(this).find("span[class!='label']").html(Object.keys(mapData.pokemons).length)
             }),
-        "<a target='_blank' href='https://www.paypal.me/PokeGoBamb/5' id='paypalLink' style='float:right;color:#ffe082'><span class='label'>Paypal</span></a>",
-        "<a target='_blank' href='https://www.patreon.com/PokeGo' id='patreonLink' style='float:right;color:#ffe082'><span class='label'>Patreon</span></a>",
+        "<a target='_blank' href='https://www.paypal.me/PokeGoBamb/5' id='paypalLink' style='float:right;color:#ffe082'><i class='fab fa-paypal fa-fw itemIcon'></i><i><!--Buffer to avoid icon collision--></i><span class='label'>Paypal</span></a>",
+        "<a target='_blank' href='https://www.patreon.com/PokeGo' id='patreonLink' style='float:right;color:#ffe082'><i class='fab fa-patreon fa-fw itemIcon'></i><i><!--Buffer to avoid icon collision--></i><span class='label'>Patreon</span></a>",
         //["<a style='float:right'>test</a>", "right"]
     ]
 
@@ -278,7 +281,7 @@ $(function () {
             $("pkmnCounter").click()
         }, 2000)
 
-    const extraItemsWidth = 28
+    const extraItemsWidth = 26
 
     // Hide items if not enough space each time the site is resized
     $(window).resize(() => {

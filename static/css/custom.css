@@ -13,39 +13,23 @@ CSS class definitions
 * For more help, go to this wiki page: https://rocketmap.readthedocs.io/en/develop/extras/Custom-CSS.html 
 */
 
-#header > a#paypalLink::before {
-	margin: 0 .5em 0 0;
-	content: "\f1ed";
-	-moz-osx-font-smoothing: grayscale;
-	-webkit-font-smoothing: antialiased;
-	font-family: "Font Awesome 5 Brands";
-	font-style: normal;
-	font-weight: 400;
-	text-transform: none !important;
+#header > .headerItem > .itemIcon {
+	position: absolute;
+	top: 1.25em;
+	left: -7.75px;
 }
 
-#header > a#patreonLink::before {
-	margin: 0 .5em 0 0;
-	content: "\f3d9";
-	-moz-osx-font-smoothing: grayscale;
-	-webkit-font-smoothing: antialiased;
-	font-family: "Font Awesome 5 Brands";
-	font-style: normal;
-	font-weight: 400;
-	text-transform: none !important;
+#header > .headerItem {
+	position: relative;
+	margin: 0 5px 0 5px;
 }
 
-#header > a#pkmnCounter::before {
-	margin: 0 .5em 0 0;
-	content: "\f3c5";
-	-moz-osx-font-smoothing: grayscale;
-	-webkit-font-smoothing: antialiased;
-	font-family: "Font Awesome 5 Free";
-	font-style: normal;
-	font-weight: 900;
-	text-transform: none !important;
+#header > .headerItem *{
+	display: inline-block;
 }
 
-#header > a[href="#stats"]::before {
-	font-family: "Font Awesome 5 Free"
+@media screen and (max-width: 736px) {
+	#header > .headerItem > .itemIcon {
+    	margin-left: -5px;
+	}
 }
