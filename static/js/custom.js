@@ -169,7 +169,8 @@ $(function () {
 
             swal({
                 title: motdTitle,
-                text: motd
+                text: motd,
+                buttons: false
             })
         }
     }
@@ -208,11 +209,32 @@ $(function () {
         return $(this).html() == "Full Stats" 
     }).remove()
 
+    // Generates HeaderItems
+    function genHeaderItem(innerHtml, iconClasses, outerAttrs) {
+        if (outerAttrs === 'undefined') outerAttrs = {}
+        if (innerHtml === 'undefined') innerHtml = "" 
+        if (iconClasses === 'undefined') iconClasses = [] 
+
+        var base = $("<a></a>")
+
+        for (var k in outerAttrs) {
+            base.attr(k, outerAttrs[k])
+        }
+
+        if (iconClasses.length > 0) {
+            var icon = base.append("<i class='fa-fw itemIcon'>").append("<i><!--Buffer to avoid icon collision--></i>").find("i.itemIcon")
+            iconClasses.forEach((cls) => {
+                icon.addClass(cls)
+            })
+        }
+
+        base.append(innerHtml).addClass("customHeaderItem")
+
+        return base
+    }
+
     // Add new items to header
     const $statsToggle = $("#header a#statsToggle") // "Stats" button in header
-    const $headerTitleIcon = $("#header h1") // RocketMap + Icon in header
-    $statsToggle.addClass("headerItem")
-    $headerTitleIcon.addClass("headerItem")
 
     const toInsert = [ // Array of new items that should be inserted
         /*
@@ -228,21 +250,29 @@ $(function () {
             
             The items will appear in the order they are in the array. (e.g. first item in array will be first item to the left of status toggle)
         */
-        $("<a id='pkmnCounter' style='float:right'><i class='fas fa-map-marker-alt fa-fw itemIcon'></i><i><!--Buffer to avoid icon collision--></i><span class='label'>Pokémon</span>: <span>0</span></a>").click(
-            function() { 
+        genHeaderItem("<span class='label'>Pokémon:&nbsp;</span><span>0</span>", ["fas", "fa-map-marker-alt"], {"style": "float:right", "id":"pkmnCounter"}).click(
+            () => { 
                 $(this).find("span[class!='label']").html(Object.keys(mapData.pokemons).length)
             }),
-        $("<a target='_blank' href='https://www.paypal.me/PokeGoBamb/5' id='paypalLink' style='float:right;color:#ffe082'><i class='fab fa-paypal fa-fw itemIcon'></i><i><!--Buffer to avoid icon collision--></i><span class='label' style='display:none;'>Paypal</span></a>").hover(
+        genHeaderItem("<span class='label' style='display:none;'>Crypto</span>", ["fab", "fa-bitcoin"], {"style": "float:right;color:#ffe082", "id":"cryptoButton"}).hover(
+            (e) => {
+                //console.log("toggle paypal")
+                $(this).find("#cryptoButton span.label").toggle("blind", {direction: "left"})
+            }).click(
+            () => {
+                swal({text: "Just send your digital coins to one of these addresses!\n\nBitcoin: address\nBitcoin Cash: cashaddr\nEthereum: 0xeth", title: "Support us with Crypto!", buttons: false})
+            }),
+        genHeaderItem("<span class='label' style='display:none;'>Paypal</span>", ["fab", "fa-paypal"], {"style": "float:right;color:#ffe082", "id":"paypalLink", "target":"_blank", "href":"https://www.paypal.me/PokeGoBamb/5"}).hover(
             (e) => {
                 //console.log("toggle paypal")
                 $(this).find("#paypalLink span.label").toggle("blind", {direction: "left"})
             }),
-        $("<a target='_blank' href='https://www.patreon.com/PokeGo' id='patreonLink' style='float:right;color:#ffe082'><i class='fab fa-patreon fa-fw itemIcon'></i><i><!--Buffer to avoid icon collision--></i><span class='label' style='display:none;'>Patreon</span></a>").hover(
+        genHeaderItem("<span class='label' style='display:none;'>Patreon</span>", ["fab", "fa-patreon"], {"style": "float:right;color:#ffe082", "id":"patreonLink", "target":"_blank", "href":"https://www.patreon.com/PokeGo"}).hover(
             (e) => {
                 //console.log("toggle paypal")
-               $(this).find("#patreonLink span.label").toggle("blind", {direction: "left"}) 
+                $(this).find("#patreonLink span.label").toggle("blind", {direction: "left"})
             }),
-        "<a id='supportString' style='float:right'><span class='label'>Support us on:</span></a>"
+        "<a id='supportString' style='float:right'><span class='label'>Support us:</span></a>"
         //["<a style='float:right'>test</a>", "right"]
     ]
 
@@ -273,7 +303,7 @@ $(function () {
         if (mode == undefined) { // Default is left
             mode = "left"
         }
-        obj.addClass("headerItem") // Add to "headerItem" class for dynamic hiding on page resize
+        obj.addClass("customHeaderItem") // Add to "headerItem" class for dynamic hiding on page resize
 
         if (mode == "left") {
             obj.insertAfter($statsToggle)
@@ -290,15 +320,16 @@ $(function () {
             $("pkmnCounter").click()
         }, 2000)
 
-    const extraItemsWidth = 26
+    window.extraItemsWidth = 8
 
     // Hide items if not enough space each time the site is resized
     $(window).resize(() => {
         var headerSize = $("#header").outerWidth(true), itemsSize = 0
 
-        $("#header .headerItem").each((i, e) => {
-            var item = $(this).find(e)
-            var newItemsSize = itemsSize + item.outerWidth(true) + extraItemsWidth
+        $("#header").children().each((i, e) => {
+            var item = $(e), w = item.outerWidth(true)
+            
+            var newItemsSize = itemsSize + w + extraItemsWidth
             
             if (newItemsSize >= headerSize) { // If items won't fit
                 item.hide()
