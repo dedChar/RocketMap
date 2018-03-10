@@ -13,23 +13,27 @@ CSS class definitions
 * For more help, go to this wiki page: https://rocketmap.readthedocs.io/en/develop/extras/Custom-CSS.html 
 */
 
-#header > .headerItem > .itemIcon {
+#header > .customHeaderItem > .itemIcon {
 	position: absolute;
 	top: 1.25em;
-	left: -7.75px;
+	left: -10px;
 }
 
-#header > .headerItem {
+#header > .customHeaderItem {
 	position: relative;
 	margin: 0 5px 0 5px;
 }
 
-#header > .headerItem *{
+#header > .customHeaderItem *{
 	display: inline-block;
 }
 
 @media screen and (max-width: 736px) {
-	#header > .headerItem > .itemIcon {
+	#header > .customHeaderItem > .itemIcon {
     	margin-left: -5px;
 	}
+}
+
+.swal-button {
+	line-height: 1em;
 }
