@@ -317,7 +317,7 @@ $(function () {
     // Update Pokémon Counter every 2 seconds
     window.setInterval(
         function() { 
-            $("pkmnCounter").click()
+            $("#pkmnCounter").click()
         }, 2000)
 
     window.extraItemsWidth = 8
