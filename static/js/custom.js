@@ -235,6 +235,11 @@ $(function () {
 
     // Add new items to header
     const $statsToggle = $("#header a#statsToggle") // "Stats" button in header
+    
+    // Set up Crypto SweetAlert content
+    const cryptoAlertText = "Just send your digital coins to one of these addresses!<br><br><b>Bitcoin:</b><br><a target='_blank' href='bitcoin:36Kd3UjB4pmW2PtEMsFviyewVW4bD21eQZ'>36Kd3UjB4pmW2PtEMsFviyewVW4bD21eQZ</a><br><br><b>Bitcoin Cash:</b><br><a target='_blank' href='bitcoincash:pqjyatn5t6hy9j8s508gt35cat9a8fsmhcnfjt70xf'>pqjyatn5t6hy9j8s508gt35cat9a8fsmhcnfjt70xf</a>"
+    const cryptoAlertContent = document.createElement("div")
+    cryptoAlertContent.innerHTML = cryptoAlertText
 
     const toInsert = [ // Array of new items that should be inserted
         /*
@@ -250,9 +255,9 @@ $(function () {
             
             The items will appear in the order they are in the array. (e.g. first item in array will be first item to the left of status toggle)
         */
-        genHeaderItem("<span class='label'>Pokémon:&nbsp;</span><span>0</span>", ["fas", "fa-map-marker-alt"], {"style": "float:right", "id":"pkmnCounter"}).click(
+        genHeaderItem("<span class='label'>Pokémon:&nbsp;</span><span class='counter'>0</span>", ["fas", "fa-map-marker-alt"], {"style": "float:right", "id":"pkmnCounter"}).click(
             () => { 
-                $(this).find("span[class!='label']").html(Object.keys(mapData.pokemons).length)
+                $(this).find("#pkmnCounter span.counter").html(Object.keys(mapData.pokemons).length)
             }),
         genHeaderItem("<span class='label' style='display:none;'>Crypto</span>", ["fab", "fa-bitcoin"], {"style": "float:right;color:#ffe082", "id":"cryptoButton"}).hover(
             (e) => {
@@ -260,7 +265,7 @@ $(function () {
                 $(this).find("#cryptoButton span.label").toggle("blind", {direction: "left"})
             }).click(
             () => {
-                swal({text: "Just send your digital coins to one of these addresses!\n\nBitcoin: address\nBitcoin Cash: cashaddr\nEthereum: 0xeth", title: "Support us with Crypto!", buttons: false})
+                swal({content: cryptoAlertContent , title: "Support us with Crypto!", buttons: false})
             }),
         genHeaderItem("<span class='label' style='display:none;'>Paypal</span>", ["fab", "fa-paypal"], {"style": "float:right;color:#ffe082", "id":"paypalLink", "target":"_blank", "href":"https://www.paypal.me/PokeGoBamb/5"}).hover(
             (e) => {
