@@ -328,7 +328,7 @@ $(function () {
     window.extraItemsWidth = 8
 
     // Hide items if not enough space each time the site is resized
-    $(window).resize(() => {
+    function hideHeaderItems() {
         var headerSize = $("#header").outerWidth(true), itemsSize = 0
 
         $("#header").children().each((i, e) => {
@@ -345,5 +345,8 @@ $(function () {
                 itemsSize = newItemsSize
             }
         })
-    })
+    }
+
+    $(window).resize(() => {hideHeaderItems()}) // Run on resize
+    $("#header").ready(hideHeaderItems()) // Run once when loaded
 })
