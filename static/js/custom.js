@@ -350,9 +350,83 @@ $(function () {
     $(window).resize(() => {hideHeaderItems()}) // Run on resize
     $("#header").ready(hideHeaderItems()) // Run once when loaded
 
+    // Add new options category
+    const $navAccordion = $("nav#nav div#nav-accordion")
+
+    function addNavCategory(title, iconClass, extraAttrs, append) {
+        if (title === 'undefined') return
+        if (extraAttrs === 'undefined' || (typeof extraAttrs != 'object')) extraAttrs = {}
+        if (append === 'undefined' || (typeof append != 'boolean')) append = true
+
+        var base = $("<h3></h3>").html(title)
+
+        if (typeof iconClass == 'string') {
+            base.prepend("<i class='" + iconClass + "'></i>")
+        }
+
+        base.attr(extraAttrs)
+        base.addClass("customNavCategory")
+
+        if (append) {
+            $navAccordion.append(base)
+            $navAccordion.append("<div></div>") // The accordion containing the switches
+        } else {
+            $navAccordion.prepend("<div></div>")
+            $navAccordion.prepend(base)
+        }
+
+        return base
+    }
+
+    function addSettingsSwitch(navCategory, title, id, checked, changedHandler, extraAttrs, append, overrideHtml) {
+        if (navCategory === 'undefined' || !(navCategory instanceof jQuery)) return
+        if (title === 'undefined' || typeof title != 'string') return
+        if (id === 'undefined' || typeof id != 'string') return
+        if (append === 'undefined' || typeof append != 'boolean') append = true
+        if (checked === 'undefined' || typeof checked != 'boolean') checked = false
+        if (extraAttrs === 'undefined' || typeof extraAttrs != 'object') extraAttrs = {}
+
+        var base = $("<div class='form-control switch-container customSwitchContainer'><div>").append(
+                "<h3>" + title + "</h3>").append(
+                "<div class='onoffswitch'></div>")
+
+        var onOffSwitch = base.find("div.onoffswitch")
+        onOffSwitch.append("<input id='" + id + "' type='checkbox' name='" + id + "' class='onoffswitch-checkbox customSwitch' checked>").append(
+            "<label class='onoffswitch-label' for='" + id + "'></label>")
+
+        var switchLabel = onOffSwitch.find("label.onoffswitch-label")
+        switchLabel.append("<span class='switch-label' data-on='On' data-off='Off'></span>").append(
+            "<span class='switch-handle'></span>")
+
+        var input = onOffSwitch.find("input")
+
+        if (typeof overrideHtml == 'string') { // Override html
+            base.html(overrideHtml)
+        }
+
+        if (typeof changedHandler == "function") {
+            input.change(changedHandler) // Set changedHandler
+        }
+
+        input.prop("checked", checked) // Flip switch to default position
+
+        if (append) {
+            navCategory.next().append(base)
+        } else {
+            navCategory.next().prepend(base)
+        }
+
+        return {switch: input, container: base}
+    }
+
+    const $additionalSettings = addNavCategory("Additional Settings", "fas fa-puzzle-piece fa-fw")
+
+
+    // Restricted areas switch
+    const polygonArray = [] // Stores all polygons that are created later
 
     // Mark restricted Areas
-
+    
     // All restricted area polygons
     const restrictedCoords = {
             Muna: [
@@ -1023,7 +1097,23 @@ $(function () {
             polygonsInfoWindow.setPosition(e.latLng)
             polygonsInfoWindow.open(map)
         })
+        polygonArray.push(poly) // Add to polygonArray
     }
 
+    // Set up switch for the polygons
+    StoreOptions['showRestrictedAreas'] = { // Add key to Store
+        default: true,
+        type: StoreTypes.Boolean
+    }
+
+    const $switchRestrictedPolygons = addSettingsSwitch($additionalSettings, "Show Restricted Areas", "restArea-switch", Store.get('showRestrictedAreas'), function () { 
+        console.log("triggered")
+        console.log(this.checked)
+        for (var k in polygonArray) {
+            polygonArray[k].setVisible(this.checked)
+        }
+        Store.set('showRestrictedAreas', this.checked)
+    }).switch
+    $switchRestrictedPolygons.trigger("change") // Trigger change to hide polygons if switch is disabled
 
 })
