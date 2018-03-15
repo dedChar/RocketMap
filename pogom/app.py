@@ -9,21 +9,88 @@ from datetime import datetime
 from s2sphere import LatLng
 from bisect import bisect_left
 from flask import Flask, abort, jsonify, render_template, request,\
-    make_response, send_from_directory
+    make_response, send_from_directory, session
 from flask.json import JSONEncoder
 from flask_compress import Compress
 
 from .models import (Pokemon, Gym, Pokestop, ScannedLocation,
                      MainWorker, WorkerStatus, Token, HashKeys,
-                     SpawnPoint)
+                     SpawnPoint, AuthKeys)
 from .utils import (get_args, get_pokemon_name, get_pokemon_types,
                     now, dottedQuadToNum)
 from .transform import transform_from_wgs_to_gcj
 from .blacklist import fingerprints, get_ip_blacklist
 
+from functools import wraps
+from hashlib import sha256
+from base64 import b64encode
+from random import SystemRandom
+
+import os, uuid
+
 log = logging.getLogger(__name__)
 compress = Compress()
 
+
+cached_auth_keys = None
+temp_auth_keys = {}
+key_assignments = {}
+
+def require_authentication(func):
+    @wraps(func)
+    def check_key(*args, **kwargs):
+        global cached_auth_keys
+        if cached_auth_keys is None:
+            cached_auth_keys = AuthKeys.get_keys_as_dict()
+
+        if 'temp_auth_key' in session:
+            if session['temp_auth_key'] not in temp_auth_keys:
+                abort(401)
+            return func(*args, **kwargs)
+        abort(401)
+    return check_key
+
+def gen_temp_key():
+    # Generate a temporary key
+    rand = SystemRandom()
+    extra_chars = rand.choice([b'oS', b'pR', b'aZ', b'kI', b'eV', b'ml'])
+    bits = rand.getrandbits(256)
+
+    digest = sha256(str(bits).encode()).digest()
+    
+    return b64encode(digest, extra_chars)
+
+def add_temp_key(master_hash):
+    # assign a new temp key to a master key
+    global cached_auth_keys
+    global key_assignments
+    global temp_auth_keys
+    retries = 0
+
+    # If key was not found, reload keys from DB and check again
+    while (master_hash not in cached_auth_keys and retries < 2) or cached_auth_keys is None:
+        cached_auth_keys = AuthKeys.get_keys_as_dict()
+        retries += 1
+        if retries >= 1:
+            log.debug("Key \"" + master_hash + "\" does not exist.")
+            return
+
+    key_props = cached_auth_keys[master_hash]
+    if key_props['valid_until'] < datetime.now():
+        log.debug("Key \"" + master_hash + "\" has expired.")
+        return
+
+    if master_hash not in key_assignments:
+        key_assignments[master_hash] = []
+
+    if len(key_assignments[master_hash]) >= key_props['max_sessions']:
+        key_assignments[master_hash].pop()
+    
+    temp_key = gen_temp_key()
+
+    temp_auth_keys[temp_key] = master_hash
+    key_assignments[master_hash].insert(0, temp_key)
+    return temp_key
 
 def convert_pokemon_list(pokemon):
     args = get_args()
@@ -89,6 +156,9 @@ class Pogom(Flask):
         self.route("/robots.txt", methods=['GET'])(self.render_robots_txt)
         self.route("/serviceWorker.min.js", methods=['GET'])(
             self.render_service_worker_js)
+        self.route("/authenticate", methods=['POST'])(self.authenticate)
+        
+        self.secret_key = os.environ.get('RM_SECRET_KEY', uuid.uuid4().hex)
 
     def render_robots_txt(self):
         return render_template('robots.txt')
@@ -220,7 +290,7 @@ class Pogom(Flask):
                                lang=args.locale,
                                show=visibility_flags
                                )
-
+    @require_authentication
     def raw_data(self):
         # Make sure fingerprint isn't blacklisted.
         fingerprint_blacklisted = any([
@@ -557,6 +627,24 @@ class Pogom(Flask):
         else:
             d['login'] = 'failed'
         return jsonify(d)
+
+    def authenticate(self):
+        global cached_auth_keys
+        global temp_auth_keys
+
+        if cached_auth_keys is None:
+            cached_auth_keys = AuthKeys.get_keys_as_dict()
+
+        key = request.form.get('password', None)
+        if key is None:
+            abort(401)
+        
+        key_hash = sha256(key).hexdigest()
+        if key_hash in cached_auth_keys:
+            session['temp_auth_key'] = add_temp_key(key_hash)
+            return "ok"
+        else:
+            abort(401)
 
 
 class CustomJSONEncoder(JSONEncoder):

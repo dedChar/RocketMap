@@ -1813,6 +1813,26 @@ class HashKeys(BaseModel):
             result = query[0].peak if query else 0
             return result
 
+class AuthKeys(BaseModel):
+    key_hash = CharField(max_length=64)
+    max_sessions = IntegerField(default=1)
+    valid_until = DateTimeField()
+    comment = TextField(null=True)
+
+    @staticmethod
+    def get_valid_keys():
+        keys = AuthKeys.get_all()
+        return [i for i in keys if i['valid_until'] > datetime.now()]
+
+    @staticmethod
+    def get_keys_as_dict(only_valid=True):
+        if only_valid:
+            keys = AuthKeys.get_valid_keys()
+        else:
+            keys = AuthKeys.get_all()
+        return {i['key_hash']: i for i in keys}
+
+
 
 def hex_bounds(center, steps=None, radius=None):
     # Make a box that is (70m * step_limit * 2) + 70m away from the
@@ -2856,7 +2876,7 @@ def create_tables(db):
     tables = [Pokemon, Pokestop, Gym, Raid, ScannedLocation, GymDetails,
               GymMember, GymPokemon, Trainer, MainWorker, WorkerStatus,
               SpawnPoint, ScanSpawnPoint, SpawnpointDetectionData,
-              Token, LocationAltitude, PlayerLocale, HashKeys]
+              Token, LocationAltitude, PlayerLocale, HashKeys, AuthKeys]
     with db.execution_context():
         for table in tables:
             if not table.table_exists():
