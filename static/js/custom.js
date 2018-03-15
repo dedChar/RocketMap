@@ -354,7 +354,12 @@ $(function () {
     const swalLoginOptions = {
         title: "Not Authorized!",
         text: "Please provide your authentication key to access the map.\n\nIf you don't have one, head to our Patreon and become a Patron!",
-        content: "input",
+        content: {
+            element: "input",
+            attributes: {
+                type: "password"
+            }
+        },
         button: {
             text: "Sign in",
             closeModal: false
@@ -383,7 +388,12 @@ $(function () {
                         icon: "error",
                         title: "Error!",
                         text: "Something has gone wrong, please try again later.",
-                    }).then(function () {loginFormDisplaying = false})
+                    }).then(function () {
+                            setTimeout(function () {
+                                loginFormDisplaying = false
+                                displayLoginForm()
+                            }, 100)
+                        })
                 },
                 statusCode: {
                     401: function () {
@@ -391,7 +401,12 @@ $(function () {
                             icon: "error",
                             title: "Invalid Key!",
                             text: "The key you tried to use is either invalid or has expired. Please try a different one.",
-                        }).then(function () {loginFormDisplaying = false})
+                        }).then(function () {
+                            setTimeout(function () {
+                                loginFormDisplaying = false
+                                displayLoginForm()
+                            }, 100)
+                        })
                     }
                 }
             })})
