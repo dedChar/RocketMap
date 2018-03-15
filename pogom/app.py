@@ -46,7 +46,15 @@ def require_authentication(func):
         if 'temp_auth_key' in session:
             if session['temp_auth_key'] not in temp_auth_keys:
                 abort(401)
-            return func(*args, **kwargs)
+            
+            # Identify master key and check if the temp key is still valid
+            master_hash = temp_auth_keys[session['temp_auth_key']]
+            if master_hash in key_assignments and session['temp_auth_key'] in key_assignments[master_hash]:
+                return func(*args, **kwargs)
+
+            # Delete auth key from temp_auth_key dict and session
+            temp_auth_keys[session['temp_auth_key']] = None
+            session['temp_auth_key'] = None
         abort(401)
     return check_key
 
