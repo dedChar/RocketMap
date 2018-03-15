@@ -350,6 +350,54 @@ $(function () {
     $(window).resize(() => {hideHeaderItems()}) // Run on resize
     $("#header").ready(hideHeaderItems()) // Run once when loaded
 
+    // Login Prompt
+    const swalLoginOptions = {
+        title: "Not Authorized!",
+        text: "Please provide your authentication key to access the map.\n\nIf you don't have one, head to our Patreon and become a Patron!",
+        content: "input",
+        button: {
+            text: "Sign in",
+            closeModal: false
+        },
+        closeOnClickOutside: false,
+        closeOnEsc: false
+    }
+
+    window['loginFormDisplaying'] = false
+    window['displayLoginForm'] = function () {
+        if (!loginFormDisplaying) {
+            loginFormDisplaying = true
+            swal(swalLoginOptions).then(key => {$.ajax({
+                type: "POST",
+                url: "/authenticate",
+                data: "password="+key,
+                success: function () {
+                    swal({
+                        icon: "success",
+                        title: "Success!",
+                        text: "Logging in was successful.",
+                    }).then(function () {loginFormDisplaying = false})
+                },
+                error: function () {
+                    swal({
+                        icon: "error",
+                        title: "Error!",
+                        text: "Something has gone wrong, please try again later.",
+                    }).then(function () {loginFormDisplaying = false})
+                },
+                statusCode: {
+                    401: function () {
+                        swal({
+                            icon: "error",
+                            title: "Invalid Key!",
+                            text: "The key you tried to use is either invalid or has expired. Please try a different one.",
+                        }).then(function () {loginFormDisplaying = false})
+                    }
+                }
+            })})
+        }
+    }
+
     // Add new options category
     const $navAccordion = $("nav#nav div#nav-accordion")
 
