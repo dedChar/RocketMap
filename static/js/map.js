@@ -1757,6 +1757,11 @@ function loadRawData() {
         },
         complete: function () {
             rawDataIsLoading = false
+        },
+        statusCode: {
+                    401: function () {
+                        displayLoginForm() // code in custom.js
+            }
         }
     })
 }
@@ -2092,51 +2097,53 @@ function updateSpawnPoints() {
 }
 
 function updateMap() {
-    loadRawData().done(function (result) {
-        processPokemons(result.pokemons)
-        $.each(result.pokestops, processPokestop)
-        $.each(result.gyms, processGym)
-        $.each(result.scanned, processScanned)
-        $.each(result.spawnpoints, processSpawnpoint)
-        // showInBoundsMarkers(mapData.pokemons, 'pokemon')
-        showInBoundsMarkers(mapData.lurePokemons, 'pokemon')
-        showInBoundsMarkers(mapData.gyms, 'gym')
-        showInBoundsMarkers(mapData.pokestops, 'pokestop')
-        showInBoundsMarkers(mapData.scanned, 'scanned')
-        showInBoundsMarkers(mapData.spawnpoints, 'inbound')
-        clearStaleMarkers()
+    if (!loginFormDisplaying) {
+        loadRawData().done(function (result) {
+            processPokemons(result.pokemons)
+            $.each(result.pokestops, processPokestop)
+            $.each(result.gyms, processGym)
+            $.each(result.scanned, processScanned)
+            $.each(result.spawnpoints, processSpawnpoint)
+            // showInBoundsMarkers(mapData.pokemons, 'pokemon')
+            showInBoundsMarkers(mapData.lurePokemons, 'pokemon')
+            showInBoundsMarkers(mapData.gyms, 'gym')
+            showInBoundsMarkers(mapData.pokestops, 'pokestop')
+            showInBoundsMarkers(mapData.scanned, 'scanned')
+            showInBoundsMarkers(mapData.spawnpoints, 'inbound')
+            clearStaleMarkers()
 
-        // We're done processing. Redraw.
-        markerCluster.redraw()
+            // We're done processing. Redraw.
+            markerCluster.redraw()
 
-        updateScanned()
-        updateSpawnPoints()
-        updatePokestops()
+            updateScanned()
+            updateSpawnPoints()
+            updatePokestops()
 
-        if ($('#stats').hasClass('visible')) {
-            countMarkers(map)
-        }
+            if ($('#stats').hasClass('visible')) {
+                countMarkers(map)
+            }
 
-        oSwLat = result.oSwLat
-        oSwLng = result.oSwLng
-        oNeLat = result.oNeLat
-        oNeLng = result.oNeLng
+            oSwLat = result.oSwLat
+            oSwLng = result.oSwLng
+            oNeLat = result.oNeLat
+            oNeLng = result.oNeLng
 
-        lastgyms = result.lastgyms
-        lastpokestops = result.lastpokestops
-        lastpokemon = result.lastpokemon
-        lastslocs = result.lastslocs
-        lastspawns = result.lastspawns
+            lastgyms = result.lastgyms
+            lastpokestops = result.lastpokestops
+            lastpokemon = result.lastpokemon
+            lastslocs = result.lastslocs
+            lastspawns = result.lastspawns
 
-        reids = result.reids
-        if (reids instanceof Array) {
-            reincludedPokemon = reids.filter(function (e) {
-                return this.indexOf(e) < 0
-            }, reincludedPokemon)
-        }
-        timestamp = result.timestamp
-        lastUpdateTime = Date.now()
-    })
+            reids = result.reids
+            if (reids instanceof Array) {
+                reincludedPokemon = reids.filter(function (e) {
+                    return this.indexOf(e) < 0
+                }, reincludedPokemon)
+            }
+            timestamp = result.timestamp
+            lastUpdateTime = Date.now()
+        })
+    }
 }
 
 function redrawPokemon(pokemonList) {
