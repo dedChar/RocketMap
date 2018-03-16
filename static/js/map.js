@@ -1947,7 +1947,7 @@ function updateSpawnPoints() {
 }
 
 function updateMap() {
-    if (!loginFormDisplaying) {
+    if (!isLoginFormDisplaying()) {
         loadRawData().done(function (result) {
             processPokemons(result.pokemons)
             $.each(result.pokestops, processPokestop)

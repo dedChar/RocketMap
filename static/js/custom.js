@@ -357,7 +357,8 @@ $(function () {
         content: {
             element: "input",
             attributes: {
-                type: "password"
+                type: "password",
+                id: "loginForm"
             }
         },
         button: {
@@ -368,10 +369,12 @@ $(function () {
         closeOnEsc: false
     }
 
-    window['loginFormDisplaying'] = false
+    window['isLoginFormDisplaying'] = function () {
+        // Login Form is displaying when the swal container is visible and an element with id loginForm exists
+        return $("#loginForm").parent().parent().css("opacity") == "1"
+    }
     window['displayLoginForm'] = function () {
-        if (!loginFormDisplaying) {
-            loginFormDisplaying = true
+        if (!isLoginFormDisplaying()) {
             swal(swalLoginOptions).then(key => {$.ajax({
                 type: "POST",
                 url: "/authenticate",
@@ -381,16 +384,21 @@ $(function () {
                         icon: "success",
                         title: "Success!",
                         text: "Logging in was successful.",
-                    }).then(function () {loginFormDisplaying = false})
+                    })
                 },
                 error: function () {
                     swal({
                         icon: "error",
                         title: "Error!",
                         text: "Something has gone wrong, please try again later.",
+                        content: {
+                            element: "i",
+                            attributes: {
+                                id: "loginForm"
+                            }
+                        }
                     }).then(function () {
                             setTimeout(function () {
-                                loginFormDisplaying = false
                                 displayLoginForm()
                             }, 100)
                         })
@@ -401,9 +409,14 @@ $(function () {
                             icon: "error",
                             title: "Invalid Key!",
                             text: "The key you tried to use is either invalid or has expired. Please try a different one.",
+                            content: {
+                                element: "i",
+                                attributes: {
+                                    id: "loginForm"
+                                }
+                            }
                         }).then(function () {
                             setTimeout(function () {
-                                loginFormDisplaying = false
                                 displayLoginForm()
                             }, 100)
                         })
