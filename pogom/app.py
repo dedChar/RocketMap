@@ -33,16 +33,13 @@ compress = Compress()
 
 
 cached_auth_keys = None
+cached_time = None
 temp_auth_keys = {}
 key_assignments = {}
 
 def require_authentication(func):
     @wraps(func)
     def check_key(*args, **kwargs):
-        global cached_auth_keys
-        if cached_auth_keys is None:
-            cached_auth_keys = AuthKeys.get_keys_as_dict()
-
         if 'temp_auth_key' in session:
             if session['temp_auth_key'] not in temp_auth_keys:
                 abort(401)
@@ -68,22 +65,27 @@ def gen_temp_key():
     
     return b64encode(digest, extra_chars)
 
+def get_cached_keys(force=False):
+    global cached_auth_keys
+    global cached_time
+
+    if cached_auth_keys is None or cached_time is None or (datetime.now() - cached_time).total_seconds() > 5 * 60 or force:
+        cached_auth_keys = AuthKeys.get_keys_as_dict()
+        cached_time = datetime.now()
+        if force:
+            log.info("Forced AuthKey cache update!")
+        log.info("Updated AuthKey cache. New timestamp: " + str(cached_time))
+
+    return cached_auth_keys
+
 def add_temp_key(master_hash):
     # assign a new temp key to a master key
-    global cached_auth_keys
+    
     global key_assignments
     global temp_auth_keys
-    retries = 0
+    cached_keys = get_cached_keys()
 
-    # If key was not found, reload keys from DB and check again
-    while (master_hash not in cached_auth_keys and retries < 2) or cached_auth_keys is None:
-        cached_auth_keys = AuthKeys.get_keys_as_dict()
-        retries += 1
-        if retries >= 1:
-            log.debug("Key \"" + master_hash + "\" does not exist.")
-            return
-
-    key_props = cached_auth_keys[master_hash]
+    key_props = cached_keys[master_hash]
     if key_props['valid_until'] < datetime.now():
         log.debug("Key \"" + master_hash + "\" has expired.")
         return
@@ -637,23 +639,24 @@ class Pogom(Flask):
         return jsonify(d)
 
     def authenticate(self):
-        global cached_auth_keys
         global temp_auth_keys
-
-        if cached_auth_keys is None:
-            cached_auth_keys = AuthKeys.get_keys_as_dict()
+        cached_keys = get_cached_keys()
 
         key = request.form.get('password', None)
         if key is None:
             abort(401)
-        
+    
         key_hash = sha256(key).hexdigest()
-        if key_hash in cached_auth_keys:
-            session['temp_auth_key'] = add_temp_key(key_hash)
-            return "ok"
-        else:
-            abort(401)
-
+        for i in range(2):
+            if key_hash not in cached_keys:
+                if i == 0:
+                    cached_keys = get_cached_keys(True)
+                elif i == 1:
+                    log.debug("Key \"" + key_hash + "\" does not exist.")
+                    abort(401)
+            else:
+                session['temp_auth_key'] = add_temp_key(key_hash)
+                return "ok"
 
 class CustomJSONEncoder(JSONEncoder):
 
