@@ -361,9 +361,16 @@ $(function () {
                 id: "loginForm"
             }
         },
-        button: {
-            text: "Sign in",
-            closeModal: false
+        buttons: {
+            patreon: {
+                text: "Obtain a Key",
+                value: "__obtain_key",
+                closeModal: true
+            },
+            confirm: {
+                text: "Sign in",
+                closeModal: false    
+            },
         },
         closeOnClickOutside: false,
         closeOnEsc: false
@@ -373,42 +380,30 @@ $(function () {
         // Login Form is displaying when the swal container is visible and an element with id loginForm exists
         return $("#loginForm").parent().parent().css("opacity") == "1"
     }
-    window['displayLoginForm'] = function () {
-        if (!isLoginFormDisplaying()) {
-            swal(swalLoginOptions).then(key => {$.ajax({
-                type: "POST",
-                url: "/authenticate",
-                data: "password="+key,
-                success: function () {
-                    swal({
-                        icon: "success",
-                        title: "Success!",
-                        text: "Logging in was successful.",
-                    })
-                },
-                error: function () {
-                    swal({
-                        icon: "error",
-                        title: "Error!",
-                        text: "Something has gone wrong, please try again later.",
-                        content: {
-                            element: "i",
-                            attributes: {
-                                id: "loginForm"
-                            }
-                        }
-                    }).then(function () {
-                            setTimeout(function () {
-                                displayLoginForm()
-                            }, 100)
+    window['displayLoginForm'] = function (force) {
+        if (!isLoginFormDisplaying() || force) {
+            swal(swalLoginOptions).then(value => {
+                if (value == "__obtain_key") {
+                    open("https://www.patreon.com/PokeGo", "_blank")
+                    displayLoginForm(true)
+                    return
+                }
+                $.ajax({
+                    type: "POST",
+                    url: "/authenticate",
+                    data: "password="+value,
+                    success: function () {
+                        swal({
+                            icon: "success",
+                            title: "Success!",
+                            text: "Logging in was successful.",
                         })
-                },
-                statusCode: {
-                    401: function () {
+                    },
+                    error: function () {
                         swal({
                             icon: "error",
-                            title: "Invalid Key!",
-                            text: "The key you tried to use is either invalid or has expired. Please try a different one.",
+                            title: "Error!",
+                            text: "Something has gone wrong, please try again later.",
                             content: {
                                 element: "i",
                                 attributes: {
@@ -416,13 +411,32 @@ $(function () {
                                 }
                             }
                         }).then(function () {
-                            setTimeout(function () {
-                                displayLoginForm()
-                            }, 100)
-                        })
+                                setTimeout(function () {
+                                    displayLoginForm()
+                                }, 100)
+                            })
+                    },
+                    statusCode: {
+                        401: function () {
+                            swal({
+                                icon: "error",
+                                title: "Invalid Key!",
+                                text: "The key you tried to use is either invalid or has expired. Please try a different one.",
+                                content: {
+                                    element: "i",
+                                    attributes: {
+                                        id: "loginForm"
+                                    }
+                                }
+                            }).then(function () {
+                                setTimeout(function () {
+                                    displayLoginForm()
+                                }, 100)
+                            })
+                        }
                     }
-                }
-            })})
+                })
+            })
         }
     }
 
@@ -1183,8 +1197,6 @@ $(function () {
     }
 
     const $switchRestrictedPolygons = addSettingsSwitch($additionalSettings, "Show Restricted Areas", "restArea-switch", Store.get('showRestrictedAreas'), function () { 
-        console.log("triggered")
-        console.log(this.checked)
         for (var k in polygonArray) {
             polygonArray[k].setVisible(this.checked)
         }
